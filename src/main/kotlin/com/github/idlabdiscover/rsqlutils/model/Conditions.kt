@@ -3,8 +3,10 @@ package com.github.idlabdiscover.rsqlutils.model
 import com.github.idlabdiscover.rsqlutils.builder.Builder
 import com.github.idlabdiscover.rsqlutils.builder.BuilderConfig
 import com.github.idlabdiscover.rsqlutils.impl.BuilderProxy
+import com.github.idlabdiscover.rsqlutils.visitors.PredicateVisitor
 import com.github.idlabdiscover.rsqlutils.visitors.RSQLVisitor
 import java.lang.reflect.Method
+import java.util.function.Predicate
 
 interface Condition<T : Builder<T>> : Builder<T> {
 
@@ -12,7 +14,11 @@ interface Condition<T : Builder<T>> : Builder<T> {
 
     fun or(): T
 
-    fun <Q, S> query(visitor: NodeVisitor<Q, S>, context: S? = null): Q
+    fun <Q, S> visitUsing(visitor: NodeVisitor<Q, S>, context: S? = null): Q
+
+    fun <E> asPredicate(): Predicate<E> {
+        return visitUsing(PredicateVisitor())
+    }
 
 }
 
@@ -50,7 +56,7 @@ abstract class AbstractCondition<T : Builder<T>>(
         return combine(conditions, LogicalOp.AND)
     }
 
-    override fun <Q, S> query(visitor: NodeVisitor<Q, S>, context: S?): Q {
+    override fun <Q, S> visitUsing(visitor: NodeVisitor<Q, S>, context: S?): Q {
         return visitor.visitAny(node, context = context)
     }
 
@@ -76,7 +82,7 @@ abstract class AbstractCondition<T : Builder<T>>(
         if (other !is AbstractCondition<*>) return false
 
         if (builderClass != other.builderClass) return false
-        if (node != other.node) return false
+        if (simplifyNode(node) != simplifyNode(other.node)) return false
 
         return true
     }

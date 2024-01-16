@@ -75,9 +75,9 @@ class PropertyHelper<T : Builder<T>, S>(
     override fun eq(value: S) = condition(RSQLOperators.EQUAL, listOf(value))
 
     override fun ne(value: S) = condition(RSQLOperators.NOT_EQUAL, listOf(value))
-    override fun valueIn(values: Collection<S>) = condition(RSQLOperators.IN, listOf(values))
+    override fun valueIn(values: Collection<S>) = condition(RSQLOperators.IN, values)
 
-    override fun valueNotIn(values: Collection<S>) = condition(RSQLOperators.NOT_IN, listOf(values))
+    override fun valueNotIn(values: Collection<S>) = condition(RSQLOperators.NOT_IN, values)
 
     override fun before(instant: S, exclusive: Boolean) =
         condition(if (exclusive) RSQLOperators.LESS_THAN else RSQLOperators.LESS_THAN_OR_EQUAL, listOf(instant))
@@ -140,7 +140,7 @@ class LongProperty<T : Builder<T>>(helper: PropertyHelper<T, Long>) : AbstractNu
 
 class ShortProperty<T : Builder<T>>(helper: PropertyHelper<T, Short>) : AbstractNumberProperty<T, Short>(helper)
 
-class EnumProperty<T : Builder<T>, E : Enum<E>>(helper: PropertyHelper<T, E>) : ListableProperty<T, E> by helper,
+abstract class EnumProperty<T : Builder<T>, E : Enum<E>>(helper: PropertyHelper<T, E>) : ListableProperty<T, E> by helper,
     EquitableProperty<T, E> by helper
 
 class InstantProperty<T : Builder<T>>(helper: PropertyHelper<T, Instant>) : InstantLikeProperty<T, Instant> by helper

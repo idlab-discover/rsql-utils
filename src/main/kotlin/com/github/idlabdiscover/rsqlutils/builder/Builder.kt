@@ -1,5 +1,9 @@
 package com.github.idlabdiscover.rsqlutils.builder
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.module.SimpleModule
 import cz.jirutka.rsql.parser.RSQLParser
 import cz.jirutka.rsql.parser.ast.ComparisonOperator
 import cz.jirutka.rsql.parser.ast.RSQLOperators
@@ -50,6 +54,23 @@ abstract class BuilderCompanion<T : Builder<T>> private constructor(
     fun parse(rsql: String): Condition<T> {
         return RSQLParser(builderConfig.operators).parse(rsql)
             .accept(ConditionVisitor(this))
+    }
+
+    fun generateJacksonModule(): Module {
+        val module = SimpleModule()
+        module.addSerializer(Condition::class.java, object : JsonSerializer<Condition<*>>() {
+            override fun serialize(instance: Condition<*>, generator: JsonGenerator, provider: SerializerProvider) {
+                generator.writeString(instance.toString())
+            }
+        })
+        module.addDeserializer(Condition::class.java, object : JsonDeserializer<Condition<T>>() {
+            override fun deserialize(parser: JsonParser, context: DeserializationContext): Condition<T> {
+                val rsql = parser.valueAsString
+                return this@BuilderCompanion.parse(rsql)
+            }
+
+        })
+        return module
     }
 
 }

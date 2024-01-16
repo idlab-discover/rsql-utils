@@ -7,10 +7,7 @@ import cz.jirutka.rsql.parser.ast.OrNode
 import com.github.idlabdiscover.rsqlutils.builder.Builder
 import com.github.idlabdiscover.rsqlutils.builder.BuilderCompanion
 import com.github.idlabdiscover.rsqlutils.impl.BuilderProxy
-import com.github.idlabdiscover.rsqlutils.model.Condition
-import com.github.idlabdiscover.rsqlutils.model.FieldPath
-import com.github.idlabdiscover.rsqlutils.model.Property
-import com.github.idlabdiscover.rsqlutils.model.PropertyHelper
+import com.github.idlabdiscover.rsqlutils.model.*
 
 class ConditionVisitor<T : Builder<T>>(private val builderCompanion: BuilderCompanion<T>) :
     NoArgRSQLVisitorAdapter<Condition<T>>() {
@@ -23,7 +20,7 @@ class ConditionVisitor<T : Builder<T>>(private val builderCompanion: BuilderComp
     }
 
     override fun visit(node: ComparisonNode): Condition<T> {
-        val propertyClass = getPropertyClass(node)
+        val propertyClass = getPropertyClass(FieldPath(node.selector))
         val propertySerDes = builderCompanion.builderConfig.getPropertySerDes(propertyClass)
         return PropertyHelper<T, Any>(
             propertyClass,
@@ -45,7 +42,16 @@ class ConditionVisitor<T : Builder<T>>(private val builderCompanion: BuilderComp
         }
     }
 
-    private fun getPropertyClass(node: ComparisonNode): Class<Property<*>> {
-        return builderCompanion.builderClass.java.declaredMethods.first { it.name == node.selector }.returnType as Class<Property<*>>
+    private fun getPropertyClass(
+        fieldPath: FieldPath,
+        containingClass: Class<*> = builderCompanion.builderClass.java,
+    ): Class<Property<*>> {
+        val propertyClass =
+            containingClass.declaredMethods.first { it.name == fieldPath.segments.first() }.returnType as Class<Property<*>>
+        return if (ComposedProperty::class.java.isAssignableFrom(propertyClass)) {
+            getPropertyClass(FieldPath(fieldPath.segments.drop(1)), propertyClass)
+        } else {
+            propertyClass
+        }
     }
 }

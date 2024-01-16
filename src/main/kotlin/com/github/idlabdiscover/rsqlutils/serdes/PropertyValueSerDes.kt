@@ -1,6 +1,7 @@
 package com.github.idlabdiscover.rsqlutils.serdes
 
 import com.github.idlabdiscover.rsqlutils.model.*
+import org.apache.commons.text.StringEscapeUtils
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -39,22 +40,25 @@ abstract class AbstractPropertyValueSerDes<S>(
 
 }
 
-object StringPropertyValueSerDes : AbstractPropertyValueSerDes<String>({ it }, { it })
-object BooleanPropertyValueSerDes : AbstractPropertyValueSerDes<Boolean>({ it.toString() }, { it.toBoolean() })
-
-//class EnumPropertyValueSerDes<E: Enum<E>>: AbstractPropertyValueSerDes<Enum<*>>({it.toString()}, { Enum })
-//object DoublePropertyValueSerDes : AbstractPropertyValueSerDes<Number>({ it.toString() }, { it.toDouble() })
-
-object DoublePropertyValueSerDes : PropertyValueSerDes<Double> {
-    override fun serialize(value: Double): String {
-        return value.toString()
+object StringPropertyValueSerDes : PropertyValueSerDes<String> {
+    override fun serialize(value: String): String {
+        return if (value.any { it.isWhitespace() }) {
+            "\"${StringEscapeUtils.escapeJava(value)}\""
+        } else {
+            value
+        }
     }
 
-    override fun deserialize(representation: String): Double {
-        return representation.toDouble()
+    override fun deserialize(representation: String): String {
+        return representation
     }
 
 }
+
+object BooleanPropertyValueSerDes : AbstractPropertyValueSerDes<Boolean>({ it.toString() }, { it.toBoolean() })
+
+object DoublePropertyValueSerDes : AbstractPropertyValueSerDes<Number>({ it.toString() }, { it.toDouble() })
+
 
 object FloatPropertyValueSerDes : AbstractPropertyValueSerDes<Number>({ it.toString() }, { it.toFloat() })
 object IntegerPropertyValueSerDes : AbstractPropertyValueSerDes<Number>({ it.toString() }, { it.toInt() })
@@ -62,6 +66,6 @@ object LongPropertyValueSerDes : AbstractPropertyValueSerDes<Number>({ it.toStri
 object ShortPropertyValueSerDes : AbstractPropertyValueSerDes<Number>({ it.toString() }, { it.toShort() })
 object InstantPropertyValueSerDes : AbstractPropertyValueSerDes<Instant>({
     it.atOffset(ZoneOffset.UTC).format(
-        DateTimeFormatter.ISO_INSTANT
+        DateTimeFormatter.ISO_ZONED_DATE_TIME
     )
-}, { OffsetDateTime.parse(it, DateTimeFormatter.ISO_INSTANT).toInstant() })
+}, { OffsetDateTime.parse(it, DateTimeFormatter.ISO_ZONED_DATE_TIME).toInstant() })
