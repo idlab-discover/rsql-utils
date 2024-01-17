@@ -1,17 +1,16 @@
 package com.github.idlabdiscover.rsqlutils.builder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.idlabdiscover.rsqlutils.builder.utils.TestQuery;
 import com.github.idlabdiscover.rsqlutils.builder.utils.TestRecord;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.jackson.DatabindCodec;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.github.idlabdiscover.rsqlutils.builder.BuilderKt.queryBuilderOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static com.github.idlabdiscover.rsqlutils.builder.BuilderKt.*;
 
 public class UseFromJavaTest {
 
@@ -35,14 +34,15 @@ public class UseFromJavaTest {
     }
 
     @Test
-    public void testJacksonModule() {
+    public void testJacksonModule() throws JsonProcessingException {
         var q = queryBuilderOf(TestQuery.class).create().firstName().eq("Jane");
         var example = new Example(q);
 
         // Register generated Jackson module with mapper
-        DatabindCodec.mapper().registerModule(queryBuilderOf(TestQuery.class).generateJacksonModule());
-        var json = JsonObject.mapFrom(example);
-        assertEquals(q.toString(), json.getString("filter"));
+        var mapper = new ObjectMapper().registerModules(queryBuilderOf(TestQuery.class).generateJacksonModule());
+        var json = mapper.writeValueAsString(example);
+        var tree = mapper.readTree(json);
+        assertEquals(q.toString(), tree.get("filter").asText());
     }
 
 }
