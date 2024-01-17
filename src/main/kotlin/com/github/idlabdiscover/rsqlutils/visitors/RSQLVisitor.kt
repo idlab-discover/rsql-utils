@@ -28,7 +28,9 @@ class RSQLVisitor(private val builderConfig: BuilderConfig) : NodeVisitor<String
     }
 
     private fun serialize(value: Any, node: ComparisonNode): String {
-        val strVal = builderConfig.getPropertySerDes(node.propertyClass).serialize(value)
+        val propertySerDes = builderConfig.getPropertySerDes(node.propertyClass)
+        val strVal =
+            propertySerDes?.serialize(value) ?: value.toString() // Fallback to toString if no SerDes is defined.
         return strVal
     }
 

@@ -91,9 +91,8 @@ data class BuilderConfig(
     val operators: Set<ComparisonOperator>
 ) {
 
-    fun getPropertySerDes(propertyClass: Class<Property<*>>): PropertyValueSerDes<Any> {
-        return (propertySerDesMapping[propertyClass]
-            ?: throw IllegalArgumentException("No property SerDes found for '${propertyClass.simpleName}'")) as PropertyValueSerDes<Any>
+    fun getPropertySerDes(propertyClass: Class<Property<*>>): PropertyValueSerDes<Any>? {
+        return propertySerDesMapping[propertyClass] as PropertyValueSerDes<Any>?
     }
 
 }

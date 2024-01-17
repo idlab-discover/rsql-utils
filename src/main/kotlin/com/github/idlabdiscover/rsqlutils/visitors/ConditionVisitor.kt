@@ -21,7 +21,7 @@ class ConditionVisitor<T : Builder<T>>(private val builderCompanion: BuilderComp
 
     override fun visit(node: ComparisonNode): T {
         val propertyClass = getPropertyClass(FieldPath(node.selector))
-        val propertySerDes = builderCompanion.builderConfig.getPropertySerDes(propertyClass)
+        val propertySerDes = builderCompanion.builderConfig.getPropertySerDes(propertyClass)?:throw IllegalArgumentException("Cannot deserialize '${node.selector}': no property SerDes found for '${propertyClass.simpleName}'")
         return PropertyHelper<T, Any>(
             propertyClass,
             BuilderProxy(

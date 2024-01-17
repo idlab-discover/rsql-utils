@@ -4,6 +4,8 @@ import com.github.idlabdiscover.rsqlutils.builder.Builder
 import com.github.idlabdiscover.rsqlutils.builder.BuilderCompanion
 import com.github.idlabdiscover.rsqlutils.model.*
 import com.github.idlabdiscover.rsqlutils.serdes.AbstractPropertyValueSerDes
+import com.github.idlabdiscover.rsqlutils.serdes.PropertyValueSerDes
+import java.net.URI
 import java.time.Instant
 
 interface ExampleQuery : Builder<ExampleQuery> {
@@ -56,7 +58,14 @@ class DemoEnumProperty(helper: PropertyHelper<ExampleQueryWithCustomSerDes, Demo
 
 object DemoEnumPropertyValueSerDes : AbstractPropertyValueSerDes<DemoEnum>({ it.toString() }, { DemoEnum.valueOf(it) })
 
-data class TestRecord(val id: Long, val firstName: String, val lastName: String, val age: Short, val address: TestAddress? = null)
+data class TestRecord(
+    val id: Long,
+    val firstName: String,
+    val lastName: String,
+    val age: Short,
+    val address: TestAddress? = null
+)
+
 data class TestAddress(
     val street: String,
     val houseNumber: Int,
@@ -66,13 +75,16 @@ data class TestAddress(
 )
 
 interface TestQuery : Builder<TestQuery> {
-    companion object : BuilderCompanion<TestQuery>(TestQuery::class.java)
+    companion object :
+        BuilderCompanion<TestQuery>(TestQuery::class.java, mapOf(URIProperty::class.java to URIPropertyValueSerDes))
 
     fun id(): LongProperty<TestQuery>
     fun firstName(): StringProperty<TestQuery>
     fun lastName(): StringProperty<TestQuery>
     fun age(): ShortProperty<TestQuery>
     fun address(): AddressProperty
+
+    fun homePage(): URIProperty<TestQuery>
 }
 
 interface AddressProperty : ComposedProperty {
@@ -81,4 +93,18 @@ interface AddressProperty : ComposedProperty {
     fun city(): StringProperty<TestQuery>
     fun postalCode(): IntegerProperty<TestQuery>
     fun country(): StringProperty<TestQuery>
+}
+
+class URIProperty<T : Builder<T>>(private val helper: PropertyHelper<T, URI>) :
+    EquitableProperty<T, URI> by helper, ListableProperty<T, URI> by helper
+
+object URIPropertyValueSerDes : PropertyValueSerDes<URI> {
+    override fun serialize(value: URI): String {
+        return value.toASCIIString()
+    }
+
+    override fun deserialize(representation: String): URI {
+        return URI.create(representation)
+    }
+
 }

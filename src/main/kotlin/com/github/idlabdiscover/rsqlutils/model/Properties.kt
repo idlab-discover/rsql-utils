@@ -143,7 +143,8 @@ class LongProperty<T : Builder<T>>(helper: PropertyHelper<T, Long>) : AbstractNu
 
 class ShortProperty<T : Builder<T>>(helper: PropertyHelper<T, Short>) : AbstractNumberProperty<T, Short>(helper)
 
-abstract class EnumProperty<T : Builder<T>, E : Enum<E>>(helper: PropertyHelper<T, E>) : ListableProperty<T, E> by helper,
+abstract class EnumProperty<T : Builder<T>, E : Enum<E>>(helper: PropertyHelper<T, E>) :
+    ListableProperty<T, E> by helper,
     EquitableProperty<T, E> by helper
 
 class InstantProperty<T : Builder<T>>(helper: PropertyHelper<T, Instant>) : InstantLikeProperty<T, Instant> by helper

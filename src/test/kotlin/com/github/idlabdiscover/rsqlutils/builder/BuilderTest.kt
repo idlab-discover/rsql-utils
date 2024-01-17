@@ -4,8 +4,12 @@ import com.github.idlabdiscover.rsqlutils.builder.utils.DemoEnum
 import com.github.idlabdiscover.rsqlutils.builder.utils.ExampleQuery
 import com.github.idlabdiscover.rsqlutils.builder.utils.ExampleQueryWithCustomSerDes
 import com.github.idlabdiscover.rsqlutils.builder.utils.TestQuery
+import com.github.idlabdiscover.rsqlutils.model.EquitableProperty
+import com.github.idlabdiscover.rsqlutils.model.ListableProperty
+import com.github.idlabdiscover.rsqlutils.model.PropertyHelper
 import mu.KotlinLogging
 import org.junit.jupiter.api.Test
+import java.net.URI
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.test.assertEquals
@@ -110,6 +114,11 @@ class BuilderTest {
             ExampleQuery.create().and().and(ExampleQuery.create().or(), ExampleQuery.create().or()),
             ExampleQuery
         )
+    }
+
+    @Test
+    fun testCustomProperty() {
+        testQuery("homePage==https://janedoe.example.org", TestQuery.create().homePage().eq(URI.create("https://janedoe.example.org")), TestQuery)
     }
 }
 
