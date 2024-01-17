@@ -4,16 +4,15 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.module.SimpleModule
+import com.github.idlabdiscover.rsqlutils.impl.BuilderProxy
+import com.github.idlabdiscover.rsqlutils.model.NodeVisitor
+import com.github.idlabdiscover.rsqlutils.model.Property
+import com.github.idlabdiscover.rsqlutils.serdes.PropertyValueSerDes
+import com.github.idlabdiscover.rsqlutils.visitors.ConditionVisitor
 import cz.jirutka.rsql.parser.RSQLParser
 import cz.jirutka.rsql.parser.ast.ComparisonOperator
 import cz.jirutka.rsql.parser.ast.RSQLOperators
-import com.github.idlabdiscover.rsqlutils.impl.BuilderProxy
-import com.github.idlabdiscover.rsqlutils.model.*
-import com.github.idlabdiscover.rsqlutils.serdes.PropertyValueSerDes
-import com.github.idlabdiscover.rsqlutils.visitors.ConditionVisitor
-import com.github.idlabdiscover.rsqlutils.visitors.PredicateVisitor
 import java.util.function.Predicate
-import kotlin.reflect.KClass
 
 /**
  * Extend this Builder interface with an interface that defines your RSQL builder using methods that return
@@ -35,9 +34,7 @@ interface Builder<T : Builder<T>> {
 
     fun <Q, S> visitUsing(visitor: NodeVisitor<Q, S>, context: S? = null): Q
 
-    fun <E> asPredicate(): Predicate<E> {
-        return visitUsing(PredicateVisitor())
-    }
+    fun <E> asPredicate(): Predicate<E>
 
 }
 
@@ -99,4 +96,13 @@ data class BuilderConfig(
             ?: throw IllegalArgumentException("No property SerDes found for '${propertyClass.simpleName}'")) as PropertyValueSerDes<Any>
     }
 
+}
+
+@JvmOverloads
+fun <T : Builder<T>> queryBuilderOf(
+    builderClass: Class<T>,
+    propertySerDesMappings: Map<Class<out Property<*>>, PropertyValueSerDes<*>> = emptyMap(),
+    extraOperators: Set<ComparisonOperator> = emptySet()
+): BuilderCompanion<T> {
+    return BuilderCompanion(builderClass, propertySerDesMappings, extraOperators)
 }

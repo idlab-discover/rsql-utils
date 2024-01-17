@@ -3,10 +3,12 @@ package com.github.idlabdiscover.rsqlutils.impl
 import com.github.idlabdiscover.rsqlutils.builder.Builder
 import com.github.idlabdiscover.rsqlutils.builder.BuilderConfig
 import com.github.idlabdiscover.rsqlutils.model.*
+import com.github.idlabdiscover.rsqlutils.visitors.PredicateVisitor
 import com.github.idlabdiscover.rsqlutils.visitors.RSQLVisitor
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
+import java.util.function.Predicate
 
 class BuilderProxy<T : Builder<T>> internal constructor(
     val builderClass: Class<T>,
@@ -85,6 +87,10 @@ class BuilderProxy<T : Builder<T>> internal constructor(
 
     override fun <Q, S> visitUsing(visitor: NodeVisitor<Q, S>, context: S?): Q {
         return visitor.visitAny(node, context = context)
+    }
+
+    override fun <E> asPredicate(): Predicate<E> {
+        return visitUsing(PredicateVisitor())
     }
 
     protected fun combine(conditions: List<T>, operator: LogicalOp): T {
