@@ -41,7 +41,7 @@ You can now start building RSQL style queries in a type-safe manner:
 val q = PersonQuery.create().firstName().eq("Jane").and().lastName().eq("Doe")
 ```
 
-The resulting `Condition<PersonQuery>` implements `toString()` which can be used to serialize the query into an RSQL expression:
+The resulting `PersonQuery` instance implements `toString()` which can be used to serialize the query into an RSQL expression:
 
 ```kotlin
 val q = PersonQuery.create().firstName().eq("Jane").and().lastName().eq("Doe")
@@ -61,7 +61,7 @@ println(q == parsedQ)
 // Prints: true
 ```
 
-The resulting conditions implement `equals()` and `hashCode()`, hence `q` and `parsedQ` being equal in the above example.
+The resulting queries implement `equals()` and `hashCode()`, hence `q` and `parsedQ` being equal in the above example.
 
 Use the `asPredicate()` function to convert the query into a Java predicate, so it can be used to perform in-memory filtering/condition checks on your data model. For example:
 
@@ -156,11 +156,11 @@ interface PersonQuery : Builder<PersonQuery> {
 }
 
 interface AddressProperty : ComposedProperty {
-    fun street(): StringProperty<TestQuery>
-    fun houseNumber(): IntegerProperty<TestQuery>
-    fun city(): StringProperty<TestQuery>
-    fun postalCode(): IntegerProperty<TestQuery>
-    fun country(): StringProperty<TestQuery>
+    fun street(): StringProperty<PersonQuery>
+    fun houseNumber(): IntegerProperty<PersonQuery>
+    fun city(): StringProperty<PersonQuery>
+    fun postalCode(): IntegerProperty<PersonQuery>
+    fun country(): StringProperty<PersonQuery>
 }
 ```
 
@@ -264,7 +264,8 @@ data class PersonView(val viewId: String, val filter: PersonQuery)
 You can then configure your Jackson `ObjectMapper` with support for `PersonQuery` by executing:
 
 ```kotlin
-val mapper = ObjectMapper().registerModule(TestQuery.generateJacksonModule())
+// Adding KotlinModule as well, allowing the mapper to process Kotlin data classes.
+val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build(), TestQuery.generateJacksonModule())
 ```
 
 The `PersonQuery` will now be serialized to JSON as a single String:
