@@ -10,22 +10,22 @@ import com.github.idlabdiscover.rsqlutils.impl.BuilderProxy
 import com.github.idlabdiscover.rsqlutils.model.*
 
 class ConditionVisitor<T : Builder<T>>(private val builderCompanion: BuilderCompanion<T>) :
-    NoArgRSQLVisitorAdapter<Condition<T>>() {
-    override fun visit(node: AndNode): Condition<T> {
+    NoArgRSQLVisitorAdapter<T>() {
+    override fun visit(node: AndNode): T {
         return builderCompanion.create().and(node.children.map { visitAny(it) })
     }
 
-    override fun visit(node: OrNode): Condition<T> {
+    override fun visit(node: OrNode): T {
         return builderCompanion.create().or(node.children.map { visitAny(it) })
     }
 
-    override fun visit(node: ComparisonNode): Condition<T> {
+    override fun visit(node: ComparisonNode): T {
         val propertyClass = getPropertyClass(FieldPath(node.selector))
         val propertySerDes = builderCompanion.builderConfig.getPropertySerDes(propertyClass)
         return PropertyHelper<T, Any>(
             propertyClass,
             BuilderProxy(
-                builderCompanion.builderClass.java,
+                builderCompanion.builderClass,
                 builderCompanion.builderConfig,
                 com.github.idlabdiscover.rsqlutils.model.OrNode()
             ),
@@ -33,7 +33,7 @@ class ConditionVisitor<T : Builder<T>>(private val builderCompanion: BuilderComp
         ).condition(node.operator, node.arguments.map { propertySerDes.deserialize(it) })
     }
 
-    private fun visitAny(node: Node): Condition<T> {
+    private fun visitAny(node: Node): T {
         return when (node) {
             is AndNode -> visit(node)
             is OrNode -> visit(node)
@@ -44,7 +44,7 @@ class ConditionVisitor<T : Builder<T>>(private val builderCompanion: BuilderComp
 
     private fun getPropertyClass(
         fieldPath: FieldPath,
-        containingClass: Class<*> = builderCompanion.builderClass.java,
+        containingClass: Class<*> = builderCompanion.builderClass,
     ): Class<Property<*>> {
         val propertyClass =
             containingClass.declaredMethods.first { it.name == fieldPath.segments.first() }.returnType as Class<Property<*>>

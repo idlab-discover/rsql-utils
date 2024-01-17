@@ -11,6 +11,8 @@ import com.github.idlabdiscover.rsqlutils.impl.BuilderProxy
 import com.github.idlabdiscover.rsqlutils.model.*
 import com.github.idlabdiscover.rsqlutils.serdes.PropertyValueSerDes
 import com.github.idlabdiscover.rsqlutils.visitors.ConditionVisitor
+import com.github.idlabdiscover.rsqlutils.visitors.PredicateVisitor
+import java.util.function.Predicate
 import kotlin.reflect.KClass
 
 /**
@@ -19,25 +21,37 @@ import kotlin.reflect.KClass
  */
 interface Builder<T : Builder<T>> {
 
-    fun and(c1: Condition<T>, c2: Condition<T>, vararg cn: Condition<T>): Condition<T>
+    fun and(c1: T, c2: T, vararg cn: T): T
 
-    fun or(c1: Condition<T>, c2: Condition<T>, vararg cn: Condition<T>): Condition<T>
+    fun or(c1: T, c2: T, vararg cn: T): T
 
-    fun and(conditions: List<Condition<T>>): Condition<T>
+    fun and(conditions: List<T>): T
 
-    fun or(conditions: List<Condition<T>>): Condition<T>
+    fun or(conditions: List<T>): T
+
+    fun and(): T
+
+    fun or(): T
+
+    fun <Q, S> visitUsing(visitor: NodeVisitor<Q, S>, context: S? = null): Q
+
+    fun <E> asPredicate(): Predicate<E> {
+        return visitUsing(PredicateVisitor())
+    }
 
 }
 
 /**
  * The companion object of your builder interface should extend this BuilderCompanion.
  */
-abstract class BuilderCompanion<T : Builder<T>> private constructor(
-    val builderClass: KClass<T>,
+open class BuilderCompanion<T : Builder<T>> private constructor(
+    val builderClass: Class<T>,
     val builderConfig: BuilderConfig
 ) {
+
+    @JvmOverloads
     constructor(
-        builderClass: KClass<T>,
+        builderClass: Class<T>,
         propertySerDesMappings: Map<Class<out Property<*>>, PropertyValueSerDes<*>> = emptyMap(),
         extraOperators: Set<ComparisonOperator> = emptySet()
     ) : this(
@@ -48,23 +62,23 @@ abstract class BuilderCompanion<T : Builder<T>> private constructor(
     )
 
     fun create(): T {
-        return BuilderProxy.create(builderClass.java, builderConfig)
+        return BuilderProxy.create(builderClass, builderConfig)
     }
 
-    fun parse(rsql: String): Condition<T> {
-        return RSQLParser(builderConfig.operators).parse(rsql)
+    fun parse(rsql: String): T {
+        return if (rsql.isBlank()) create() else RSQLParser(builderConfig.operators).parse(rsql)
             .accept(ConditionVisitor(this))
     }
 
     fun generateJacksonModule(): Module {
         val module = SimpleModule()
-        module.addSerializer(Condition::class.java, object : JsonSerializer<Condition<*>>() {
-            override fun serialize(instance: Condition<*>, generator: JsonGenerator, provider: SerializerProvider) {
+        module.addSerializer(builderClass, object : JsonSerializer<T>() {
+            override fun serialize(instance: T, generator: JsonGenerator, provider: SerializerProvider) {
                 generator.writeString(instance.toString())
             }
         })
-        module.addDeserializer(Condition::class.java, object : JsonDeserializer<Condition<T>>() {
-            override fun deserialize(parser: JsonParser, context: DeserializationContext): Condition<T> {
+        module.addDeserializer(builderClass, object : JsonDeserializer<T>() {
+            override fun deserialize(parser: JsonParser, context: DeserializationContext): T {
                 val rsql = parser.valueAsString
                 return this@BuilderCompanion.parse(rsql)
             }

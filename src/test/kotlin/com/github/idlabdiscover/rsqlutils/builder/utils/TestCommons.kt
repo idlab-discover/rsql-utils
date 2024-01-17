@@ -6,39 +6,39 @@ import com.github.idlabdiscover.rsqlutils.model.*
 import com.github.idlabdiscover.rsqlutils.serdes.AbstractPropertyValueSerDes
 import java.time.Instant
 
-interface ExampleBuilder : Builder<ExampleBuilder> {
+interface ExampleQuery : Builder<ExampleQuery> {
 
-    companion object : BuilderCompanion<ExampleBuilder>(ExampleBuilder::class)
+    companion object : BuilderCompanion<ExampleQuery>(ExampleQuery::class.java)
 
-    fun stringProperty(): StringProperty<ExampleBuilder>
+    fun stringProperty(): StringProperty<ExampleQuery>
 
-    fun doubleProperty(): DoubleProperty<ExampleBuilder>
+    fun doubleProperty(): DoubleProperty<ExampleQuery>
 
-    fun floatProperty(): DoubleProperty<ExampleBuilder>
+    fun floatProperty(): DoubleProperty<ExampleQuery>
 
-    fun intProperty(): IntegerProperty<ExampleBuilder>
+    fun intProperty(): IntegerProperty<ExampleQuery>
 
-    fun longProperty(): LongProperty<ExampleBuilder>
+    fun longProperty(): LongProperty<ExampleQuery>
 
-    fun shortProperty(): ShortProperty<ExampleBuilder>
+    fun shortProperty(): ShortProperty<ExampleQuery>
 
-    fun booleanProperty(): BooleanProperty<ExampleBuilder>
+    fun booleanProperty(): BooleanProperty<ExampleQuery>
 
-    fun instantProperty(): InstantProperty<ExampleBuilder>
+    fun instantProperty(): InstantProperty<ExampleQuery>
 
 }
 
-interface ExampleBuilderWithCustomSerDes : Builder<ExampleBuilderWithCustomSerDes> {
+interface ExampleQueryWithCustomSerDes : Builder<ExampleQueryWithCustomSerDes> {
 
-    companion object : BuilderCompanion<ExampleBuilderWithCustomSerDes>(
-        ExampleBuilderWithCustomSerDes::class,
+    companion object : BuilderCompanion<ExampleQueryWithCustomSerDes>(
+        ExampleQueryWithCustomSerDes::class.java,
         mapOf(
             InstantProperty::class.java to CustomInstantSerDes,
             DemoEnumProperty::class.java to DemoEnumPropertyValueSerDes
         )
     )
 
-    fun instantProperty(): InstantProperty<ExampleBuilderWithCustomSerDes>
+    fun instantProperty(): InstantProperty<ExampleQueryWithCustomSerDes>
 
     fun enumProperty(): DemoEnumProperty
 
@@ -51,8 +51,8 @@ enum class DemoEnum {
 object CustomInstantSerDes :
     AbstractPropertyValueSerDes<Instant>({ it.toEpochMilli().toString() }, { Instant.ofEpochMilli(it.toLong()) })
 
-class DemoEnumProperty(helper: PropertyHelper<ExampleBuilderWithCustomSerDes, DemoEnum>) :
-    EnumProperty<ExampleBuilderWithCustomSerDes, DemoEnum>(helper)
+class DemoEnumProperty(helper: PropertyHelper<ExampleQueryWithCustomSerDes, DemoEnum>) :
+    EnumProperty<ExampleQueryWithCustomSerDes, DemoEnum>(helper)
 
 object DemoEnumPropertyValueSerDes : AbstractPropertyValueSerDes<DemoEnum>({ it.toString() }, { DemoEnum.valueOf(it) })
 
@@ -66,7 +66,7 @@ data class TestAddress(
 )
 
 interface TestQuery : Builder<TestQuery> {
-    companion object : BuilderCompanion<TestQuery>(TestQuery::class)
+    companion object : BuilderCompanion<TestQuery>(TestQuery::class.java)
 
     fun id(): LongProperty<TestQuery>
     fun firstName(): StringProperty<TestQuery>

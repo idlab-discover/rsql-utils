@@ -12,64 +12,67 @@ interface ComposedProperty
 
 interface ListableProperty<T : Builder<T>, S> : Property<T> {
 
-    fun valueIn(vararg values: S): Condition<T> = valueIn(values.toList())
+    fun valueIn(vararg values: S): T = valueIn(values.toList())
 
-    fun valueIn(values: Collection<S>): Condition<T>
+    fun valueIn(values: Collection<S>): T
 
-    fun valueNotIn(vararg values: S): Condition<T> = valueNotIn(values.toList())
+    fun valueNotIn(vararg values: S): T = valueNotIn(values.toList())
 
-    fun valueNotIn(values: Collection<S>): Condition<T>
+    fun valueNotIn(values: Collection<S>): T
 
 }
 
 interface ExistentialProperty<T : Builder<T>> : Property<T> {
 
-    fun exists(): Condition<T>
+    fun exists(): T
 
-    fun doesNotExist(): Condition<T>
+    fun doesNotExist(): T
 
 }
 
 interface EquitableProperty<T : Builder<T>, S> : ExistentialProperty<T> {
 
-    fun eq(value: S): Condition<T>
+    fun eq(value: S): T
 
-    fun ne(value: S): Condition<T>
+    fun ne(value: S): T
 
 }
 
 interface InstantLikeProperty<T : Builder<T>, S> : EquitableProperty<T, S> {
 
-    fun before(instant: S, exclusive: Boolean = true): Condition<T>
+    fun before(instant: S, exclusive: Boolean = true): T
 
-    fun after(instant: S, exclusive: Boolean = true): Condition<T>
+    fun after(instant: S, exclusive: Boolean = true): T
 
-    fun between(after: S, before: S, exclusiveAfter: Boolean = true, exclusiveBefore: Boolean = true): Condition<T>
+    fun between(after: S, before: S, exclusiveAfter: Boolean = true, exclusiveBefore: Boolean = true): T
 
 }
 
 interface NumberProperty<T : Builder<T>, S : Number> : EquitableProperty<T, S>, ListableProperty<T, S> {
 
-    fun gt(number: S): Condition<T>
+    fun gt(number: S): T
 
-    fun lt(number: S): Condition<T>
+    fun lt(number: S): T
 
-    fun gte(number: S): Condition<T>
+    fun gte(number: S): T
 
-    fun lte(number: S): Condition<T>
+    fun lte(number: S): T
 
 }
 
 class PropertyHelper<T : Builder<T>, S>(
     private val propertyClass: Class<Property<*>>,
-    private val condition: AbstractCondition<T>,
+    private val currentBuilder: BuilderProxy<T>,
     private val field: FieldPath
 ) :
     EquitableProperty<T, S>, ListableProperty<T, S>, InstantLikeProperty<T, S> {
 
-    fun condition(operator: ComparisonOperator, values: Collection<*>): Condition<T> {
+    fun condition(operator: ComparisonOperator, values: Collection<*>): T {
         val newNode = ComparisonNode(field, operator, values, propertyClass)
-        return BuilderProxy(condition.builderClass, condition.builderConfig, condition.node.append(newNode))
+
+        return BuilderProxy.create(
+            currentBuilder.builderClass, currentBuilder.builderConfig, currentBuilder.node.append(newNode)
+        )
     }
 
     override fun eq(value: S) = condition(RSQLOperators.EQUAL, listOf(value))
@@ -86,11 +89,11 @@ class PropertyHelper<T : Builder<T>, S>(
         condition(if (exclusive) RSQLOperators.GREATER_THAN else RSQLOperators.GREATER_THAN_OR_EQUAL, listOf(instant))
 
     override fun between(after: S, before: S, exclusiveAfter: Boolean, exclusiveBefore: Boolean) =
-        condition.and(after(after, exclusiveAfter), before(before, exclusiveBefore))
+        currentBuilder.and(after(after, exclusiveAfter), before(before, exclusiveBefore))
 
-    override fun exists(): Condition<T> = condition(AdditionalBasicOperators.EX, listOf(true))
+    override fun exists(): T = condition(AdditionalBasicOperators.EX, listOf(true))
 
-    override fun doesNotExist(): Condition<T> = condition(AdditionalBasicOperators.EX, listOf(false))
+    override fun doesNotExist(): T = condition(AdditionalBasicOperators.EX, listOf(false))
 }
 
 class StringProperty<T : Builder<T>>(private val helper: PropertyHelper<T, String>) :

@@ -5,7 +5,6 @@ import com.github.idlabdiscover.rsqlutils.model.ComposedProperty
 import com.github.idlabdiscover.rsqlutils.model.FieldPath
 import com.github.idlabdiscover.rsqlutils.model.Property
 import com.github.idlabdiscover.rsqlutils.model.PropertyHelper
-import idlab.discover.utils.rsql.model.*
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
