@@ -1,7 +1,7 @@
 {
+  "last-release-sha": "d851dbc723384e4d2c66ec4545cd5701a4871364",
   "packages": {
     ".": {
-      "last-release-sha": "d851dbc723384e4d2c66ec4545cd5701a4871364",
       "changelog-path": "CHANGELOG.md",
       "release-type": "java",
       "bump-minor-pre-major": false,
