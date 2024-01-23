@@ -1,6 +1,3 @@
 {
-  ".": "0.0.1",
-  "extra-files": [
-    "gradle.properties"
-  ]
+  ".": "0.0.1"
 }
