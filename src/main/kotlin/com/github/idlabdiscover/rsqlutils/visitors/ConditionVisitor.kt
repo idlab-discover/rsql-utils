@@ -9,7 +9,10 @@ import com.github.idlabdiscover.rsqlutils.builder.BuilderCompanion
 import com.github.idlabdiscover.rsqlutils.impl.BuilderProxy
 import com.github.idlabdiscover.rsqlutils.model.*
 
-class ConditionVisitor<T : Builder<T>>(private val builderCompanion: BuilderCompanion<T>) :
+class ConditionVisitor<T : Builder<T>>(
+    private val builderCompanion: BuilderCompanion<T>,
+    private val classLoader: ClassLoader
+) :
     NoArgRSQLVisitorAdapter<T>() {
     override fun visit(node: AndNode): T {
         return builderCompanion.create().and(node.children.map { visitAny(it) })
@@ -21,13 +24,15 @@ class ConditionVisitor<T : Builder<T>>(private val builderCompanion: BuilderComp
 
     override fun visit(node: ComparisonNode): T {
         val propertyClass = getPropertyClass(FieldPath(node.selector))
-        val propertySerDes = builderCompanion.builderConfig.getPropertySerDes(propertyClass)?:throw IllegalArgumentException("Cannot deserialize '${node.selector}': no property SerDes found for '${propertyClass.simpleName}'")
+        val propertySerDes = builderCompanion.builderConfig.getPropertySerDes(propertyClass)
+            ?: throw IllegalArgumentException("Cannot deserialize '${node.selector}': no property SerDes found for '${propertyClass.simpleName}'")
         return PropertyHelper<T, Any>(
             propertyClass,
             BuilderProxy(
                 builderCompanion.builderClass,
                 builderCompanion.builderConfig,
-                com.github.idlabdiscover.rsqlutils.model.OrNode()
+                com.github.idlabdiscover.rsqlutils.model.OrNode(),
+                classLoader
             ),
             FieldPath(node.selector)
         ).condition(node.operator, node.arguments.map { propertySerDes.deserialize(it) })

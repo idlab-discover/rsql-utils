@@ -13,7 +13,8 @@ import java.util.function.Predicate
 class BuilderProxy<T : Builder<T>> internal constructor(
     val builderClass: Class<T>,
     val builderConfig: BuilderConfig,
-    val node: LogicalNode
+    val node: LogicalNode,
+    val classLoader: ClassLoader
 ) :
     Builder<T>, InvocationHandler {
 
@@ -22,12 +23,13 @@ class BuilderProxy<T : Builder<T>> internal constructor(
         fun <T : Builder<T>> create(
             builderClass: Class<T>,
             builderConfig: BuilderConfig,
-            node: LogicalNode = AndNode()
+            node: LogicalNode = AndNode(),
+            classLoader: ClassLoader,
         ): T {
-            val builderProxy = BuilderProxy(builderClass, builderConfig, node)
+            val builderProxy = BuilderProxy(builderClass, builderConfig, node, classLoader)
             return builderClass.cast(
                 Proxy.newProxyInstance(
-                    builderClass.classLoader,
+                    classLoader,
                     arrayOf(builderClass),
                     builderProxy
                 )
@@ -62,7 +64,8 @@ class BuilderProxy<T : Builder<T>> internal constructor(
             builderClass,
             builderConfig,
             if (node !is AndNode) AndNode(simplifyNode(node)) else AndNode(node.children.map { simplifyNode(it) }
-                .filter { it !is LogicalNode || it.children.isNotEmpty() })
+                .filter { it !is LogicalNode || it.children.isNotEmpty() }),
+            classLoader
         )
     }
 
@@ -71,7 +74,8 @@ class BuilderProxy<T : Builder<T>> internal constructor(
             builderClass,
             builderConfig,
             if (node !is OrNode) OrNode(simplifyNode(node)) else OrNode(node.children.map { simplifyNode(it) }
-                .filter { it !is LogicalNode || it.children.isNotEmpty() })
+                .filter { it !is LogicalNode || it.children.isNotEmpty() }),
+            classLoader
         )
     }
 
@@ -102,11 +106,18 @@ class BuilderProxy<T : Builder<T>> internal constructor(
     protected fun combine(conditions: List<T>, operator: LogicalOp): T {
         val children: List<AbstractNode> = conditions.map { simplifyNode(accessNodeForProxy(it)) }
             .filter { it !is LogicalNode || it.children.isNotEmpty() }
-        val newNode = simplifyNode(when (operator) {
-            LogicalOp.AND -> AndNode(children)
-            LogicalOp.OR -> OrNode(children)
-        })
-        return create(builderClass, builderConfig, if (children.isNotEmpty()) node.append(newNode) else node)
+        val newNode = simplifyNode(
+            when (operator) {
+                LogicalOp.AND -> AndNode(children)
+                LogicalOp.OR -> OrNode(children)
+            }
+        )
+        return create(
+            builderClass,
+            builderConfig,
+            if (children.isNotEmpty()) node.append(newNode) else node,
+            classLoader
+        )
     }
 
     private fun simplifyNode(node: AbstractNode): AbstractNode {

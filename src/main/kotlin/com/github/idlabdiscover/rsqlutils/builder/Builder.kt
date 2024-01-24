@@ -58,13 +58,15 @@ open class BuilderCompanion<T : Builder<T>> private constructor(
         )
     )
 
-    fun create(): T {
-        return BuilderProxy.create(builderClass, builderConfig)
+    @JvmOverloads
+    fun create(classLoader: ClassLoader = Thread.currentThread().contextClassLoader): T {
+        return BuilderProxy.create(builderClass, builderConfig, classLoader = classLoader)
     }
 
-    fun parse(rsql: String): T {
+    @JvmOverloads
+    fun parse(rsql: String, classLoader: ClassLoader = Thread.currentThread().contextClassLoader): T {
         return if (rsql.isBlank()) create() else RSQLParser(builderConfig.operators).parse(rsql)
-            .accept(ConditionVisitor(this))
+            .accept(ConditionVisitor(this, classLoader))
     }
 
     fun generateJacksonModule(): Module {

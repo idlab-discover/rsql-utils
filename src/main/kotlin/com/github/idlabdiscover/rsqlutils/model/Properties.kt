@@ -71,7 +71,10 @@ class PropertyHelper<T : Builder<T>, S>(
         val newNode = ComparisonNode(field, operator, values, propertyClass)
 
         return BuilderProxy.create(
-            currentBuilder.builderClass, currentBuilder.builderConfig, currentBuilder.node.append(newNode)
+            currentBuilder.builderClass,
+            currentBuilder.builderConfig,
+            currentBuilder.node.append(newNode),
+            currentBuilder.classLoader
         )
     }
 
