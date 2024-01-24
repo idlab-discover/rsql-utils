@@ -38,7 +38,19 @@ interface PersonQuery : Builder<PersonQuery> {
 You can now start building RSQL style queries in a type-safe manner:
 
 ```kotlin
-val q = PersonQuery.create().firstName().eq("Jane").and().lastName().eq("Doe")
+val q = PersonQuery.create().firstName().eq("Jane")
+```
+
+You can chain multiple conditions using the `and()` and `or()` functions:
+
+```kotlin
+val q = PersonQuery.create().firstName().eq("Jane").or().firstName().eq("John")
+
+// and() is implicit and may be emitted:
+PersonQuery.create().firstName().eq("Jane").lastName().eq("Doe")
+
+// Is the same as writing:
+PersonQuery.create().firstName().eq("Jane").and().lastName().eq("Doe")
 ```
 
 The resulting `PersonQuery` instance implements `toString()` which can be used to serialize the query into an RSQL expression:
