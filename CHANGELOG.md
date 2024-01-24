@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/idlab-discover/rsql-utils/compare/v1.1.0...v1.2.0) (2024-01-24)
+
+
+### Features
+
+* You can now specify the classloader to use when constructing or parsing queries ([760d5d4](https://github.com/idlab-discover/rsql-utils/commit/760d5d4ddc811ed7f794eff3f43cfe6fd879932d))
+
 ## [1.1.0](https://github.com/idlab-discover/rsql-utils/compare/v1.0.0...v1.1.0) (2024-01-24)
 
 
