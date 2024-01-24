@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.nstdio:rsql-parser:2.2.1")
+    api("io.github.nstdio:rsql-parser:2.2.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
     implementation("org.apache.commons:commons-text:1.11.0")
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
