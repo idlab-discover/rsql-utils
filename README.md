@@ -252,6 +252,8 @@ println(q == parsedQ)
 // Prints: true
 ```
 
+**Note**: You can add a mapping for a class hierarchy of Properties and provide a single mapping to a custom SerDes that supports the entire hierarchy (instead of needing to provide a mapping for each specific Property). See the test class `ClassHierarchyTest` for an example of this usage.
+
 ### Using with Jackson JSON library
 At IDLab, we often embed queries and filters in our application's data model, e.g. for modeling a scope for user permissions, views on top of resource collections, etc. As we often use [Jackson](https://github.com/FasterXML/jackson) to serialize/deserialize the data model to and from JSON, we've decided to streamline setting up Jackson support for the query builder types.
 

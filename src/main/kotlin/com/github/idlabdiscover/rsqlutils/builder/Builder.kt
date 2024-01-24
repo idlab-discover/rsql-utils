@@ -92,7 +92,11 @@ data class BuilderConfig(
 ) {
 
     fun getPropertySerDes(propertyClass: Class<Property<*>>): PropertyValueSerDes<Any>? {
-        return propertySerDesMapping[propertyClass] as PropertyValueSerDes<Any>?
+        return (propertySerDesMapping[propertyClass] ?: propertySerDesMapping.filterKeys {
+            it.isAssignableFrom(
+                propertyClass
+            )
+        }.values.firstOrNull()) as PropertyValueSerDes<Any>?
     }
 
 }

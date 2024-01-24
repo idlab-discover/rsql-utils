@@ -7,6 +7,7 @@ import com.github.idlabdiscover.rsqlutils.builder.utils.TestQuery
 import com.github.idlabdiscover.rsqlutils.model.EquitableProperty
 import com.github.idlabdiscover.rsqlutils.model.ListableProperty
 import com.github.idlabdiscover.rsqlutils.model.PropertyHelper
+import com.github.idlabdiscover.rsqlutils.serdes.PropertyValueSerDes
 import mu.KotlinLogging
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -118,7 +119,11 @@ class BuilderTest {
 
     @Test
     fun testCustomProperty() {
-        testQuery("homePage==https://janedoe.example.org", TestQuery.create().homePage().eq(URI.create("https://janedoe.example.org")), TestQuery)
+        testQuery(
+            "homePage==https://janedoe.example.org",
+            TestQuery.create().homePage().eq(URI.create("https://janedoe.example.org")),
+            TestQuery
+        )
     }
 }
 
