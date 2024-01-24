@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/idlab-discover/rsql-utils/compare/v1.0.0...v1.1.0) (2024-01-24)
+
+
+### Features
+
+* The custom SerDes mechanism can now support entire class hierarchies of Properties with a single mapping. ([ef1c7e1](https://github.com/idlab-discover/rsql-utils/commit/ef1c7e1dd23f930189c4cf46419e782a1153f6e0))
+
+
+### Bug Fixes
+
+* Builder should ommit empty logical nodes when chaining using and()/or() ([84e5030](https://github.com/idlab-discover/rsql-utils/commit/84e50301c4aca23f3db17f32036764b5a2a3fb3d))
+* Default operator when chaining without an explicit logical operator should be and(), not or() ([ddeac09](https://github.com/idlab-discover/rsql-utils/commit/ddeac0909b1b7986142f003ccb0bfd7cfbcb3cca))
+
 ## 1.0.0 (2024-01-23)
 
 
