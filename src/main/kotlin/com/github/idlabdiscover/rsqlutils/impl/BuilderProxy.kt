@@ -22,7 +22,7 @@ class BuilderProxy<T : Builder<T>> internal constructor(
         fun <T : Builder<T>> create(
             builderClass: Class<T>,
             builderConfig: BuilderConfig,
-            node: LogicalNode = OrNode()
+            node: LogicalNode = AndNode()
         ): T {
             val builderProxy = BuilderProxy(builderClass, builderConfig, node)
             return builderClass.cast(
