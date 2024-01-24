@@ -59,13 +59,19 @@ class BuilderProxy<T : Builder<T>> internal constructor(
 
     override fun and(): T {
         return create(
-            builderClass, builderConfig, if (node !is AndNode) AndNode(simplifyNode(node)) else node
+            builderClass,
+            builderConfig,
+            if (node !is AndNode) AndNode(simplifyNode(node)) else AndNode(node.children.map { simplifyNode(it) }
+                .filter { it !is LogicalNode || it.children.isNotEmpty() })
         )
     }
 
     override fun or(): T {
         return create(
-            builderClass, builderConfig, if (node !is OrNode) OrNode(simplifyNode(node)) else node
+            builderClass,
+            builderConfig,
+            if (node !is OrNode) OrNode(simplifyNode(node)) else OrNode(node.children.map { simplifyNode(it) }
+                .filter { it !is LogicalNode || it.children.isNotEmpty() })
         )
     }
 
@@ -96,10 +102,10 @@ class BuilderProxy<T : Builder<T>> internal constructor(
     protected fun combine(conditions: List<T>, operator: LogicalOp): T {
         val children: List<AbstractNode> = conditions.map { simplifyNode(accessNodeForProxy(it)) }
             .filter { it !is LogicalNode || it.children.isNotEmpty() }
-        val newNode = when (operator) {
+        val newNode = simplifyNode(when (operator) {
             LogicalOp.AND -> AndNode(children)
             LogicalOp.OR -> OrNode(children)
-        }
+        })
         return create(builderClass, builderConfig, if (children.isNotEmpty()) node.append(newNode) else node)
     }
 

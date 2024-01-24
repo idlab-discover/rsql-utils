@@ -125,6 +125,30 @@ class BuilderTest {
             TestQuery
         )
     }
+
+    @Test
+    fun testQuerySimplification() {
+        testQuery(
+            "homePage==https://janedoe.example.org,age=gt=40",
+            TestQuery.create().and().homePage().eq(URI.create("https://janedoe.example.org")).or().age().gt(40),
+            TestQuery
+        )
+
+        testQuery(
+            "homePage==https://janedoe.example.org,age=gt=40",
+            TestQuery.create().or().homePage().eq(URI.create("https://janedoe.example.org")).or().age().gt(40),
+            TestQuery
+        )
+
+        testQuery(
+            "firstName!=Jane,age=gt=25",
+            TestQuery.create().or(
+                TestQuery.create().and(TestQuery.create().firstName().ne("Jane"), TestQuery.create().or()),
+                TestQuery.create().age().gt(25)
+            ),
+            TestQuery
+        )
+    }
 }
 
 fun <T : Builder<T>> testQuery(expectedRSQL: String, q: T, companion: BuilderCompanion<T>) {
