@@ -10,6 +10,12 @@ interface Property<T : Builder<T>>
 
 interface ComposedProperty
 
+interface StringMapProperty<T : Builder<T>> : ComposedProperty {
+
+    fun entry(key: String): StringProperty<T>
+
+}
+
 interface ListableProperty<T : Builder<T>, S> : Property<T> {
 
     fun valueIn(vararg values: S): T = valueIn(values.toList())
@@ -151,4 +157,3 @@ abstract class EnumProperty<T : Builder<T>, E : Enum<E>>(helper: PropertyHelper<
     EquitableProperty<T, E> by helper
 
 class InstantProperty<T : Builder<T>>(helper: PropertyHelper<T, Instant>) : InstantLikeProperty<T, Instant> by helper
-

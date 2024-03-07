@@ -31,11 +31,17 @@ class ConditionVisitor<T : Builder<T>>(
             BuilderProxy(
                 builderCompanion.builderClass,
                 builderCompanion.builderConfig,
-                com.github.idlabdiscover.rsqlutils.model.OrNode(),
+                com.github.idlabdiscover.rsqlutils.model.AndNode(),
                 classLoader
             ),
             FieldPath(node.selector)
-        ).condition(node.operator, node.arguments.map { propertySerDes.deserialize(it) })
+        ).condition(node.operator, node.arguments.map {
+            if (node.operator == AdditionalBasicOperators.EX) {
+                it.toBoolean()
+            } else {
+                propertySerDes.deserialize(it)
+            }
+        })
     }
 
     private fun visitAny(node: Node): T {
@@ -53,10 +59,17 @@ class ConditionVisitor<T : Builder<T>>(
     ): Class<Property<*>> {
         val propertyClass =
             containingClass.declaredMethods.first { it.name == fieldPath.segments.first() }.returnType as Class<Property<*>>
-        return if (ComposedProperty::class.java.isAssignableFrom(propertyClass)) {
-            getPropertyClass(FieldPath(fieldPath.segments.drop(1)), propertyClass)
-        } else {
-            propertyClass
+        return when {
+            StringMapProperty::class.java.isAssignableFrom(propertyClass) -> StringProperty::class.java as Class<Property<*>>
+            ComposedProperty::class.java.isAssignableFrom(propertyClass) -> getPropertyClass(
+                FieldPath(
+                    fieldPath.segments.drop(
+                        1
+                    )
+                ), propertyClass
+            )
+
+            else -> propertyClass
         }
     }
 }

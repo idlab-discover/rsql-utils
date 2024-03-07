@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.github.idlabdiscover.rsqlutils.impl.BuilderProxy
+import com.github.idlabdiscover.rsqlutils.model.AdditionalBasicOperators
 import com.github.idlabdiscover.rsqlutils.model.NodeVisitor
 import com.github.idlabdiscover.rsqlutils.model.Property
 import com.github.idlabdiscover.rsqlutils.serdes.PropertyValueSerDes
@@ -54,7 +55,8 @@ open class BuilderCompanion<T : Builder<T>> private constructor(
     ) : this(
         builderClass, BuilderConfig(
             PropertyValueSerDes.defaults.plus(propertySerDesMappings),
-            RSQLOperators.defaultOperators().plus(extraOperators)
+            RSQLOperators.defaultOperators().plus(setOf(AdditionalBasicOperators.EX, AdditionalBasicOperators.RE))
+                .plus(extraOperators)
         )
     )
 

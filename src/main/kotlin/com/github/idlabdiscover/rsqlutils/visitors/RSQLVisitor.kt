@@ -16,14 +16,19 @@ class RSQLVisitor(private val builderConfig: BuilderConfig) : NodeVisitor<String
     }
 
     override fun visit(node: ComparisonNode, parent: LogicalNode?, context: Void?): String {
-        return if (node.operator.isMultiValue) {
-            val serializedArgList =
-                node.values.filterNotNull().joinToString(",", "(", ")") { serialize(it, node) }
-            "${node.field}${node.operator.symbol}$serializedArgList"
-        } else {
-            val rawValue =
-                node.values.firstOrNull() ?: throw IllegalArgumentException("Condition value cannot be null!")
-            "${node.field}${node.operator.symbol}${serialize(rawValue, node)}"
+        return when {
+            node.operator == AdditionalBasicOperators.EX -> "${node.field}${node.operator.symbol}${node.values.first()}"
+            node.operator.isMultiValue -> {
+                val serializedArgList =
+                    node.values.filterNotNull().joinToString(",", "(", ")") { serialize(it, node) }
+                "${node.field}${node.operator.symbol}$serializedArgList"
+            }
+
+            else -> {
+                val rawValue =
+                    node.values.firstOrNull() ?: throw IllegalArgumentException("Condition value cannot be null!")
+                "${node.field}${node.operator.symbol}${serialize(rawValue, node)}"
+            }
         }
     }
 
