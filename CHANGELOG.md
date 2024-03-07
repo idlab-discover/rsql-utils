@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/idlab-discover/rsql-utils/compare/v1.2.0...v1.3.0) (2024-03-07)
+
+
+### Features
+
+* introduced new property type StringMapProperty (useful for modeling e.g. properties/labels) ([91538fb](https://github.com/idlab-discover/rsql-utils/commit/91538fbf3be91ea1225b1cdc90b71169b6233dcd))
+
 ## [1.2.0](https://github.com/idlab-discover/rsql-utils/compare/v1.1.0...v1.2.0) (2024-01-24)
 
 
